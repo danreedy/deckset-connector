@@ -1,0 +1,59 @@
+scriptId = 'in.reedy.myo.deckset'
+scriptTitle = 'Deckset Connector'
+scriptDetailsUrl = "http://reedy.in/myo-deckset"
+
+function onForegroundWindowChange(app, title)
+    local isDeckset = platform == "MacOS" and app == "com.unsignedinteger.Deckset"
+    return isDeckset
+end
+
+function activeAppName()
+    return "Deckset"
+end
+
+function previousSlide()
+  myo.keyboard("left_arrow", "press")
+end
+
+function nextSlide()
+  myo.keyboard("right_arrow", "press")
+end
+
+function playSlideshow()
+  myo.keyboard("p", "press", "command", "alt")
+end
+
+function conditionallySwapWave(pose)
+    if myo.getArm() == "left" then
+        if pose == "waveIn" then
+            pose = "waveOut"
+        elseif pose == "waveOut" then
+            pose = "waveIn"
+        end
+    end
+    return pose
+end
+
+function onPoseEdge(pose, edge)
+    if (pose == "waveIn" or pose == "waveOut") and edge == "on" then
+        pose = conditionallySwapWave(pose)
+        if pose == "waveIn" and edge == "on" then
+            previousSlide()
+        end
+        if pose == "waveOut" and edge == "on" then
+            nextSlide()
+        end
+    end
+
+    if pose == "doubleTap" and edge == "on" then
+        myo.lock()
+    end
+
+    if pose == "fingersSpread" and edge == "on" then
+      myo.keyboard("p", "press", "command", "alt")
+    end
+end
+
+function onUnlock()
+    myo.unlock("hold")
+end
